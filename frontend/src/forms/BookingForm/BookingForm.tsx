@@ -84,7 +84,7 @@ const BookingForm = ({ currentUser, paymentIntent }: Props) => {
   return (
     <form
       onSubmit={handleSubmit(onSubmit)}
-      className="grid grid-cols-1 gap-5 rounded-lg border border-slate-300 p-5"
+      className="grid grid-cols-1 gap-15 rounded-lg border border-slate-300 p-5"
     >
       <span className="text-3xl font-bold">Confirm Your Details</span>
       <div className="grid grid-cols-2 gap-6">
@@ -123,9 +123,9 @@ const BookingForm = ({ currentUser, paymentIntent }: Props) => {
       <div className="space-y-2">
         <h2 className="text-xl font-semibold">Your Price Summary</h2>
 
-        <div className="bg-blue-200 p-4 rounded-md">
+        <div className="bg-green-200 p-4 rounded-md">
           <div className="font-semibold text-lg">
-            Total Cost: £{paymentIntent.totalCost.toFixed(2)}
+            Total Cost: ${paymentIntent.totalCost.toFixed(2)}
           </div>
           <div className="text-xs">Includes taxes and charges</div>
         </div>
@@ -143,7 +143,7 @@ const BookingForm = ({ currentUser, paymentIntent }: Props) => {
         <button
           disabled={isLoading}
           type="submit"
-          className="bg-blue-600 text-white p-2 font-bold hover:bg-blue-500 text-md disabled:bg-gray-500"
+          className="bg-green-600 text-white p-2 font-bold hover:bg-green-500 text-md disabled:bg-gray-500 rounded"
         >
           {isLoading ? "Saving..." : "Confirm Booking"}
         </button>

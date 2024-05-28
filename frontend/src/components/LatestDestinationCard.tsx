@@ -9,7 +9,7 @@ const LatestDestinationCard = ({ hotel }: Props) => {
   return (
     <Link
       to={`/detail/${hotel._id}`}
-      className="relative cursor-pointer overflow-hidden rounded-md"
+      className="relative cursor-pointer overflow-hidden rounded-md transition-all duration-300 hover:shadow-lg hover:-translate-y-2"
     >
       <div className="h-[300px]">
         <img
@@ -17,9 +17,9 @@ const LatestDestinationCard = ({ hotel }: Props) => {
           className="w-full h-full object-cover object-center"
         />
       </div>
-      <div className="absolute top-0 bg-opacity-50 w-fit right-0 bg-black px-2 rounded-bl-md">
+      <div className="absolute top-0 bg-opacity-50 w-fit right-0 bg-black px-2 rounded-bl-md transition-shadow duration-300 hover:shadow-[0_0_15px_rgba(255,255,255,0.8)]">
         <span className="text-white font-bold tracking-tight text-md">
-          £{hotel.pricePerNight}
+          ${hotel.pricePerNight}
         </span>
       </div>
       <div className="absolute bottom-0 p-3 bg-black bg-opacity-50 w-full rounded-b-md">
