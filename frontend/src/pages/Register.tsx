@@ -26,11 +26,11 @@ const Register = () => {
 
     const mutation = useMutation(apiClient.register, {
         onSuccess: () => {
-            showToast({message: "Registration Success!", type: "success"});
+          showToast({ message: "Registration Success!", type: "SUCCESS" });
             navigate("/")
         },
         onError: (error:Error) => {
-            showToast({message: error.message, type: "error"});
+          showToast({ message: error.message, type: "ERROR" });
         },
     });
 
