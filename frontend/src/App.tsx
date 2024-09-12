@@ -54,6 +54,12 @@ const App = () => {
             </Layout>
           }
         />
+        <Route path="/sign-in" element={
+          <Layout>
+            <SignIn />
+          </Layout>
+        }
+        />
         <Route
           path="/sign-in"
           element={
