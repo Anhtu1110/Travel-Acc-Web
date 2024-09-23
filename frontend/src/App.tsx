@@ -7,6 +7,8 @@ import {
 import Layout from "./layouts/Layout";
 import Register from "./pages/Register";
 import SignIn from "./pages/SignIn";
+import AddHotel from "./pages/AddHotel";
+import MyHotels from "./pages/MyHotels";
 
 console.log(Layout); 
 // You can use React Router v6's new <Route object> syntax for better readability
@@ -44,7 +46,30 @@ const App = () => {
           </Layout>
         }
         />
-          
+        <Route
+              path="/add-hotel"
+              element={
+                <Layout>
+                  <AddHotel />
+                </Layout>
+              }
+            />
+        <Route
+              path="/my-hotels"
+              element={
+                <Layout>
+                  <MyHotels />
+                </Layout>
+              }
+            />
+        <Route
+              path="/edit-hotel/:hotelId"
+              element={
+                <Layout>
+                  <EditHotel />
+                </Layout>
+              }
+            />
 
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
