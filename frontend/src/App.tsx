@@ -17,7 +17,6 @@ import Booking from "./pages/Booking";
 import MyBookings from "./pages/MyBookings";
 import Home from "./pages/Home";
 
-
 const App = () => {
   const { isLoggedIn } = useAppContext();
   return (

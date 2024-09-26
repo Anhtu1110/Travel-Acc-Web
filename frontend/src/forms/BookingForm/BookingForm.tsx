@@ -1,159 +1,155 @@
 import { useForm } from "react-hook-form";
-import DatePicker from "react-datepicker";
+import {
+  PaymentIntentResponse,
+  UserType,
+} from "../../../../backend/src/shared/types";
+import { CardElement, useElements, useStripe } from "@stripe/react-stripe-js";
+import { StripeCardElement } from "@stripe/stripe-js";
 import { useSearchContext } from "../../contexts/SearchContext";
+import { useParams } from "react-router-dom";
+import { useMutation } from "react-query";
+import * as apiClient from "../../api-client";
 import { useAppContext } from "../../contexts/AppContext";
-import { useLocation, useNavigate } from "react-router-dom";
 
 type Props = {
-  hotelId: string;
-  pricePerNight: number;
+  currentUser: UserType;
+  paymentIntent: PaymentIntentResponse;
 };
 
-type GuestInfoFormData = {
-  checkIn: Date;
-  checkOut: Date;
+export type BookingFormData = {
+  firstName: string;
+  lastName: string;
+  email: string;
   adultCount: number;
   childCount: number;
+  checkIn: string;
+  checkOut: string;
+  hotelId: string;
+  paymentIntentId: string;
+  totalCost: number;
 };
 
-const GuestInfoForm = ({ hotelId, pricePerNight }: Props) => {
-  const search = useSearchContext();
-  const { isLoggedIn } = useAppContext();
-  const navigate = useNavigate();
-  const location = useLocation();
+const BookingForm = ({ currentUser, paymentIntent }: Props) => {
+  const stripe = useStripe();
+  const elements = useElements();
 
-  const {
-    watch,
-    register,
-    handleSubmit,
-    setValue,
-    formState: { errors },
-  } = useForm<GuestInfoFormData>({
+  const search = useSearchContext();
+  const { hotelId } = useParams();
+
+  const { showToast } = useAppContext();
+
+  const { mutate: bookRoom, isLoading } = useMutation(
+    apiClient.createRoomBooking,
+    {
+      onSuccess: () => {
+        showToast({ message: "Booking Saved!", type: "SUCCESS" });
+      },
+      onError: () => {
+        showToast({ message: "Error saving booking", type: "ERROR" });
+      },
+    }
+  );
+
+  const { handleSubmit, register } = useForm<BookingFormData>({
     defaultValues: {
-      checkIn: search.checkIn,
-      checkOut: search.checkOut,
+      firstName: currentUser.firstName,
+      lastName: currentUser.lastName,
+      email: currentUser.email,
       adultCount: search.adultCount,
       childCount: search.childCount,
+      checkIn: search.checkIn.toISOString(),
+      checkOut: search.checkOut.toISOString(),
+      hotelId: hotelId,
+      totalCost: paymentIntent.totalCost,
+      paymentIntentId: paymentIntent.paymentIntentId,
     },
   });
 
-  const checkIn = watch("checkIn");
-  const checkOut = watch("checkOut");
+  const onSubmit = async (formData: BookingFormData) => {
+    if (!stripe || !elements) {
+      return;
+    }
 
-  const minDate = new Date();
-  const maxDate = new Date();
-  maxDate.setFullYear(maxDate.getFullYear() + 1);
+    const result = await stripe.confirmCardPayment(paymentIntent.clientSecret, {
+      payment_method: {
+        card: elements.getElement(CardElement) as StripeCardElement,
+      },
+    });
 
-  const onSignInClick = (data: GuestInfoFormData) => {
-    search.saveSearchValues(
-      "",
-      data.checkIn,
-      data.checkOut,
-      data.adultCount,
-      data.childCount
-    );
-    navigate("/sign-in", { state: { from: location } });
-  };
-
-  const onSubmit = (data: GuestInfoFormData) => {
-    search.saveSearchValues(
-      "",
-      data.checkIn,
-      data.checkOut,
-      data.adultCount,
-      data.childCount
-    );
-    navigate(`/hotel/${hotelId}/booking`);
+    if (result.paymentIntent?.status === "succeeded") {
+      bookRoom({ ...formData, paymentIntentId: result.paymentIntent.id });
+    }
   };
 
   return (
-    <div className="flex flex-col p-4 bg-blue-200 gap-4">
-      <h3 className="text-md font-bold">£{pricePerNight}</h3>
-      <form
-        onSubmit={
-          isLoggedIn ? handleSubmit(onSubmit) : handleSubmit(onSignInClick)
-        }
-      >
-        <div className="grid grid-cols-1 gap-4 items-center">
-          <div>
-            <DatePicker
-              required
-              selected={checkIn}
-              onChange={(date) => setValue("checkIn", date as Date)}
-              selectsStart
-              startDate={checkIn}
-              endDate={checkOut}
-              minDate={minDate}
-              maxDate={maxDate}
-              placeholderText="Check-in Date"
-              className="min-w-full bg-white p-2 focus:outline-none"
-              wrapperClassName="min-w-full"
-            />
+    <form
+      onSubmit={handleSubmit(onSubmit)}
+      className="grid grid-cols-1 gap-5 rounded-lg border border-slate-300 p-5"
+    >
+      <span className="text-3xl font-bold">Confirm Your Details</span>
+      <div className="grid grid-cols-2 gap-6">
+        <label className="text-gray-700 text-sm font-bold flex-1">
+          First Name
+          <input
+            className="mt-1 border rounded w-full py-2 px-3 text-gray-700 bg-gray-200 font-normal"
+            type="text"
+            readOnly
+            disabled
+            {...register("firstName")}
+          />
+        </label>
+        <label className="text-gray-700 text-sm font-bold flex-1">
+          Last Name
+          <input
+            className="mt-1 border rounded w-full py-2 px-3 text-gray-700 bg-gray-200 font-normal"
+            type="text"
+            readOnly
+            disabled
+            {...register("lastName")}
+          />
+        </label>
+        <label className="text-gray-700 text-sm font-bold flex-1">
+          Email
+          <input
+            className="mt-1 border rounded w-full py-2 px-3 text-gray-700 bg-gray-200 font-normal"
+            type="text"
+            readOnly
+            disabled
+            {...register("email")}
+          />
+        </label>
+      </div>
+
+      <div className="space-y-2">
+        <h2 className="text-xl font-semibold">Your Price Summary</h2>
+
+        <div className="bg-blue-200 p-4 rounded-md">
+          <div className="font-semibold text-lg">
+            Total Cost: £{paymentIntent.totalCost.toFixed(2)}
           </div>
-          <div>
-            <DatePicker
-              required
-              selected={checkOut}
-              onChange={(date) => setValue("checkOut", date as Date)}
-              selectsStart
-              startDate={checkIn}
-              endDate={checkOut}
-              minDate={minDate}
-              maxDate={maxDate}
-              placeholderText="Check-in Date"
-              className="min-w-full bg-white p-2 focus:outline-none"
-              wrapperClassName="min-w-full"
-            />
-          </div>
-          <div className="flex bg-white px-2 py-1 gap-2">
-            <label className="items-center flex">
-              Adults:
-              <input
-                className="w-full p-1 focus:outline-none font-bold"
-                type="number"
-                min={1}
-                max={20}
-                {...register("adultCount", {
-                  required: "This field is required",
-                  min: {
-                    value: 1,
-                    message: "There must be at least one adult",
-                  },
-                  valueAsNumber: true,
-                })}
-              />
-            </label>
-            <label className="items-center flex">
-              Children:
-              <input
-                className="w-full p-1 focus:outline-none font-bold"
-                type="number"
-                min={0}
-                max={20}
-                {...register("childCount", {
-                  valueAsNumber: true,
-                })}
-              />
-            </label>
-            {errors.adultCount && (
-              <span className="text-red-500 font-semibold text-sm">
-                {errors.adultCount.message}
-              </span>
-            )}
-          </div>
-          {isLoggedIn ? (
-            <button className="bg-blue-600 text-white h-full p-2 font-bold hover:bg-blue-500 text-xl">
-              Book Now
-            </button>
-          ) : (
-            <button className="bg-blue-600 text-white h-full p-2 font-bold hover:bg-blue-500 text-xl">
-              Sign in to Book
-            </button>
-          )}
+          <div className="text-xs">Includes taxes and charges</div>
         </div>
-      </form>
-    </div>
+      </div>
+
+      <div className="space-y-2">
+        <h3 className="text-xl font-semibold"> Payment Details</h3>
+        <CardElement
+          id="payment-element"
+          className="border rounded-md p-2 text-sm"
+        />
+      </div>
+
+      <div className="flex justify-end">
+        <button
+          disabled={isLoading}
+          type="submit"
+          className="bg-blue-600 text-white p-2 font-bold hover:bg-blue-500 text-md disabled:bg-gray-500"
+        >
+          {isLoading ? "Saving..." : "Confirm Booking"}
+        </button>
+      </div>
+    </form>
   );
 };
 
-export default GuestInfoForm;
+export default BookingForm;
