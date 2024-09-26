@@ -5,22 +5,16 @@ import { BsBuilding, BsMap } from "react-icons/bs";
 import { BiHotel, BiMoney, BiStar } from "react-icons/bi";
 
 const MyHotels = () => {
-  const { data: hotelData, isLoading, isError } = useQuery(
+  const { data: hotelData } = useQuery(
     "fetchMyHotels",
     apiClient.fetchMyHotels,
     {
-      onError: (error) => {
-        console.error("Error fetching hotels:", error);
-      },
+      onError: () => {},
     }
   );
 
-  if (isLoading) {
-    return <span>Loading hotels...</span>;
-  }
-
-  if (isError || !hotelData) {
-    return <span>No Hotels found or an error occurred.</span>;
+  if (!hotelData) {
+    return <span>No Hotels found</span>;
   }
 
   return (
@@ -37,7 +31,6 @@ const MyHotels = () => {
       <div className="grid grid-cols-1 gap-8">
         {hotelData.map((hotel) => (
           <div
-            key={hotel._id}  // Ensure each hotel has a unique key
             data-testid="hotel-card"
             className="flex flex-col justify-between border border-slate-300 rounded-lg p-8 gap-5"
           >
@@ -45,22 +38,22 @@ const MyHotels = () => {
             <div className="whitespace-pre-line">{hotel.description}</div>
             <div className="grid grid-cols-5 gap-2">
               <div className="border border-slate-300 rounded-sm p-3 flex items-center">
-                <BsMap />
+                <BsMap className="mr-1" />
                 {hotel.city}, {hotel.country}
               </div>
               <div className="border border-slate-300 rounded-sm p-3 flex items-center">
-                <BsBuilding />
+                <BsBuilding className="mr-1" />
                 {hotel.type}
               </div>
               <div className="border border-slate-300 rounded-sm p-3 flex items-center">
-                <BiMoney />£{hotel.pricePerNight} per night
+                <BiMoney className="mr-1" />£{hotel.pricePerNight} per night
               </div>
               <div className="border border-slate-300 rounded-sm p-3 flex items-center">
-                <BiHotel />
+                <BiHotel className="mr-1" />
                 {hotel.adultCount} adults, {hotel.childCount} children
               </div>
               <div className="border border-slate-300 rounded-sm p-3 flex items-center">
-                <BiStar />
+                <BiStar className="mr-1" />
                 {hotel.starRating} Star Rating
               </div>
             </div>

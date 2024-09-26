@@ -1,66 +1,56 @@
 import { useQuery } from "react-query";
-import { useParams } from "react-router-dom";
-import * as apiClient from "./../api-client";
-import { AiFillStar } from "react-icons/ai";
-import GuestInfoForm from "../forms/GuestInfoForm/GuestInfoForm";
+import * as apiClient from "../api-client";
 
-const Detail = () => {
-  const { hotelId } = useParams();
-
-  const { data: hotel } = useQuery(
-    "fetchHotelById",
-    () => apiClient.fetchHotelById(hotelId || ""),
-    {
-      enabled: !!hotelId,
-    }
+const MyBookings = () => {
+  const { data: hotels } = useQuery(
+    "fetchMyBookings",
+    apiClient.fetchMyBookings
   );
 
-  if (!hotel) {
-    return <></>;
+  if (!hotels || hotels.length === 0) {
+    return <span>No bookings found</span>;
   }
 
   return (
-    <div className="space-y-6">
-      <div>
-        <span className="flex">
-          {Array.from({ length: hotel.starRating }).map(() => (
-            <AiFillStar className="fill-yellow-400" />
-          ))}
-        </span>
-        <h1 className="text-3xl font-bold">{hotel.name}</h1>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        {hotel.imageUrls.map((image) => (
-          <div className="h-[300px]">
+    <div className="space-y-5">
+      <h1 className="text-3xl font-bold">My Bookings</h1>
+      {hotels.map((hotel) => (
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_3fr] border border-slate-300 rounded-lg p-8 gap-5">
+          <div className="lg:w-full lg:h-[250px]">
             <img
-              src={image}
-              alt={hotel.name}
-              className="rounded-md w-full h-full object-cover object-center"
+              src={hotel.imageUrls[0]}
+              className="w-full h-full object-cover object-center"
             />
           </div>
-        ))}
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-2">
-        {hotel.facilities.map((facility) => (
-          <div className="border border-slate-300 rounded-sm p-3">
-            {facility}
+          <div className="flex flex-col gap-4 overflow-y-auto max-h-[300px]">
+            <div className="text-2xl font-bold">
+              {hotel.name}
+              <div className="text-xs font-normal">
+                {hotel.city}, {hotel.country}
+              </div>
+            </div>
+            {hotel.bookings.map((booking) => (
+              <div>
+                <div>
+                  <span className="font-bold mr-2">Dates: </span>
+                  <span>
+                    {new Date(booking.checkIn).toDateString()} -
+                    {new Date(booking.checkOut).toDateString()}
+                  </span>
+                </div>
+                <div>
+                  <span className="font-bold mr-2">Guests:</span>
+                  <span>
+                    {booking.adultCount} adults, {booking.childCount} children
+                  </span>
+                </div>
+              </div>
+            ))}
           </div>
-        ))}
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr]">
-        <div className="whitespace-pre-line">{hotel.description}</div>
-        <div className="h-fit">
-          <GuestInfoForm
-            pricePerNight={hotel.pricePerNight}
-            hotelId={hotel._id}
-          />
         </div>
-      </div>
+      ))}
     </div>
   );
 };
 
-export default Detail;
+export default MyBookings;

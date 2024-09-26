@@ -1,6 +1,6 @@
 import { useQuery } from "react-query";
 import * as apiClient from "../api-client";
-// import BookingForm from "../forms/BookingForm/BookingForm";
+import BookingForm from "../forms/BookingForm/BookingForm";
 import { useSearchContext } from "../contexts/SearchContext";
 import { useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
@@ -71,7 +71,10 @@ const Booking = () => {
             clientSecret: paymentIntentData.clientSecret,
           }}
         >
-          
+          <BookingForm
+            currentUser={currentUser}
+            paymentIntent={paymentIntentData}
+          />
         </Elements>
       )}
     </div>
