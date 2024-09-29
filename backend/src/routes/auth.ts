@@ -55,8 +55,22 @@ router.post(
   }
 );
 
-router.get("/validate-token", verifyToken, (req: Request, res: Response) => {
-  res.status(200).send({ userId: req.userId });
+router.get("/validate-token", verifyToken, async (req: Request, res: Response) => {
+  try {
+    // Truy vấn cơ sở dữ liệu để lấy thông tin user dựa vào userId
+    const user = await User.findById(req.userId);
+
+    // Kiểm tra nếu user không tồn tại
+    if (!user) {
+      return res.status(404).send({ message: "User not found" });
+    }
+
+    // Trả về userId và type của user
+    res.status(200).send({ userId: req.userId, type: user.type });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send({ message: "Something went wrong" });
+  }
 });
 
 router.post("/logout", (req: Request, res: Response) => {

@@ -14,12 +14,18 @@ type ToastMessage = {
 type AppContext = {
   showToast: (toastMessage: ToastMessage) => void;
   isLoggedIn: boolean;
+  type: "personal" | "business" | null;
   stripePromise: Promise<Stripe | null>;
 };
 
 const AppContext = React.createContext<AppContext | undefined>(undefined);
 
 const stripePromise = loadStripe(STRIPE_PUB_KEY);
+
+type UserResponse = {
+  userId: string;
+  type: "personal" | "business";
+};
 
 export const AppContextProvider = ({
   children,
@@ -28,9 +34,15 @@ export const AppContextProvider = ({
 }) => {
   const [toast, setToast] = useState<ToastMessage | undefined>(undefined);
 
-  const { isError } = useQuery("validateToken", apiClient.validateToken, {
-    retry: false,
-  });
+  const { data, isError } = useQuery<UserResponse>(
+    "validateToken",
+    apiClient.validateToken,
+    {
+      retry: false,
+    }
+  );
+
+  console.log(data);
 
   return (
     <AppContext.Provider
@@ -39,6 +51,7 @@ export const AppContextProvider = ({
           setToast(toastMessage);
         },
         isLoggedIn: !isError,
+        type: data ? data.type : null,
         stripePromise,
       }}
     >

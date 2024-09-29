@@ -4,6 +4,7 @@ import { BookingType, HotelSearchResponse } from "../shared/types";
 import { param, validationResult } from "express-validator";
 import Stripe from "stripe";
 import verifyToken from "../middleware/auth";
+import User from "../models/user";
 
 const stripe = new Stripe(process.env.STRIPE_API_KEY as string);
 
@@ -90,36 +91,53 @@ router.post(
   "/:hotelId/bookings/payment-intent",
   verifyToken,
   async (req: Request, res: Response) => {
-    const { numberOfNights } = req.body;
-    const hotelId = req.params.hotelId;
+    try {
+      const user = await User.findById(req.userId);
 
-    const hotel = await Hotel.findById(hotelId);
-    if (!hotel) {
-      return res.status(400).json({ message: "Hotel not found" });
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      if (user.type !== "personal") {
+        return res.status(403).json({
+          message: "User does not have permission to perform this action",
+        });
+      }
+      const { numberOfNights } = req.body;
+      const hotelId = req.params.hotelId;
+
+      const hotel = await Hotel.findById(hotelId);
+      if (!hotel) {
+        return res.status(400).json({ message: "Hotel not found" });
+      }
+
+      const totalCost = hotel.pricePerNight * numberOfNights;
+
+      const paymentIntent = await stripe.paymentIntents.create({
+        amount: totalCost * 100,
+        currency: "gbp",
+        metadata: {
+          hotelId,
+          userId: req.userId,
+        },
+      });
+
+      if (!paymentIntent.client_secret) {
+        return res
+          .status(500)
+          .json({ message: "Error creating payment intent" });
+      }
+
+      const response = {
+        paymentIntentId: paymentIntent.id,
+        clientSecret: paymentIntent.client_secret.toString(),
+        totalCost,
+      };
+
+      res.send(response);
+    } catch (error) {
+      res.status(500).json({ message: "Something went throw" });
     }
-
-    const totalCost = hotel.pricePerNight * numberOfNights;
-
-    const paymentIntent = await stripe.paymentIntents.create({
-      amount: totalCost * 100,
-      currency: "gbp",
-      metadata: {
-        hotelId,
-        userId: req.userId,
-      },
-    });
-
-    if (!paymentIntent.client_secret) {
-      return res.status(500).json({ message: "Error creating payment intent" });
-    }
-
-    const response = {
-      paymentIntentId: paymentIntent.id,
-      clientSecret: paymentIntent.client_secret.toString(),
-      totalCost,
-    };
-
-    res.send(response);
   }
 );
 
@@ -128,6 +146,17 @@ router.post(
   verifyToken,
   async (req: Request, res: Response) => {
     try {
+      const user = await User.findById(req.userId);
+
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      if (user.type !== "personal") {
+        return res.status(403).json({
+          message: "User does not have permission to perform this action",
+        });
+      }
       const paymentIntentId = req.body.paymentIntentId;
 
       const paymentIntent = await stripe.paymentIntents.retrieve(

@@ -5,6 +5,7 @@ import Hotel from "../models/hotel";
 import verifyToken from "../middleware/auth";
 import { body } from "express-validator";
 import { HotelType } from "../shared/types";
+import User from "../models/user";
 
 const router = express.Router();
 
@@ -37,6 +38,17 @@ router.post(
   upload.array("imageFiles", 6),
   async (req: Request, res: Response) => {
     try {
+      const user = await User.findById(req.userId);
+
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      if (user.type !== "business") {
+        return res.status(403).json({
+          message: "User does not have permission to perform this action",
+        });
+      }
       const imageFiles = req.files as Express.Multer.File[];
       const newHotel: HotelType = req.body;
 
@@ -59,6 +71,17 @@ router.post(
 
 router.get("/", verifyToken, async (req: Request, res: Response) => {
   try {
+    const user = await User.findById(req.userId);
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    if (user.type !== "business") {
+      return res.status(403).json({
+        message: "User does not have permission to perform this action",
+      });
+    }
     const hotels = await Hotel.find({ userId: req.userId });
     res.json(hotels);
   } catch (error) {
@@ -69,6 +92,17 @@ router.get("/", verifyToken, async (req: Request, res: Response) => {
 router.get("/:id", verifyToken, async (req: Request, res: Response) => {
   const id = req.params.id.toString();
   try {
+    const user = await User.findById(req.userId);
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    if (user.type !== "business") {
+      return res.status(403).json({
+        message: "User does not have permission to perform this action",
+      });
+    }
     const hotel = await Hotel.findOne({
       _id: id,
       userId: req.userId,
@@ -85,6 +119,17 @@ router.put(
   upload.array("imageFiles"),
   async (req: Request, res: Response) => {
     try {
+      const user = await User.findById(req.userId);
+
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      if (user.type !== "business") {
+        return res.status(403).json({
+          message: "User does not have permission to perform this action",
+        });
+      }
       const updatedHotel: HotelType = req.body;
       updatedHotel.lastUpdated = new Date();
 

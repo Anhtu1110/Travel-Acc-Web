@@ -2,12 +2,24 @@ import express, { Request, Response } from "express";
 import verifyToken from "../middleware/auth";
 import Hotel from "../models/hotel";
 import { HotelType } from "../shared/types";
+import User from "../models/user";
 
 const router = express.Router();
 
 // /api/my-bookings
 router.get("/", verifyToken, async (req: Request, res: Response) => {
   try {
+    const user = await User.findById(req.userId);
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    if (user.type !== "personal") {
+      return res.status(403).json({
+        message: "User does not have permission to perform this action",
+      });
+    }
     const hotels = await Hotel.find({
       bookings: { $elemMatch: { userId: req.userId } },
     });

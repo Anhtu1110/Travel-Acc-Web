@@ -17,9 +17,13 @@ const LatestDestinationCard = ({ hotel }: Props) => {
           className="w-full h-full object-cover object-center"
         />
       </div>
-
-      <div className="absolute bottom-0 p-4 bg-black bg-opacity-50 w-full rounded-b-md">
-        <span className="text-white font-bold tracking-tight text-3xl">
+      <div className="absolute top-0 bg-opacity-50 w-fit right-0 bg-black px-2 rounded-bl-md">
+        <span className="text-white font-bold tracking-tight text-md">
+          £{hotel.pricePerNight}
+        </span>
+      </div>
+      <div className="absolute bottom-0 p-3 bg-black bg-opacity-50 w-full rounded-b-md">
+        <span className="text-white font-bold tracking-tight text-xl">
           {hotel.name}
         </span>
       </div>

@@ -1,5 +1,3 @@
-import { RegisterFormData } from "./pages/Register";
-import { SignInFormData } from "./pages/SignIn";
 import {
   HotelSearchResponse,
   HotelType,
@@ -7,6 +5,7 @@ import {
   UserType,
 } from "../../backend/src/shared/types";
 import { BookingFormData } from "./forms/BookingForm/BookingForm";
+import { formRegisterBusinessType, formRegisterPersonalType, formSignInType } from "./schemas/form";
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "";
 
 export const fetchCurrentUser = async (): Promise<UserType> => {
@@ -19,14 +18,14 @@ export const fetchCurrentUser = async (): Promise<UserType> => {
   return response.json();
 };
 
-export const register = async (formData: RegisterFormData) => {
+export const register = async (data: { formData:  formRegisterBusinessType | formRegisterPersonalType, type: 'personal' | 'business' }) => {
   const response = await fetch(`${API_BASE_URL}/api/users/register`, {
     method: "POST",
     credentials: "include",
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify(formData),
+    body: JSON.stringify(data),
   });
 
   const responseBody = await response.json();
@@ -36,7 +35,7 @@ export const register = async (formData: RegisterFormData) => {
   }
 };
 
-export const signIn = async (formData: SignInFormData) => {
+export const signIn = async (formData: formSignInType) => {
   const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
     method: "POST",
     credentials: "include",
