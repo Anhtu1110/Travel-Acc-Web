@@ -1,9 +1,16 @@
+// Định nghĩa kiểu dữ liệu UserType
 export type UserType = {
   _id: string;
   email: string;
   password: string;
-  firstName: string;
-  lastName: string;
+  type: "personal" | "business"; // Thêm trường 'type' để phân biệt personal và business
+  firstName?: string; // Optional nếu user là business
+  lastName?: string; // Optional nếu user là business
+  businessName?: string; // Optional nếu user là personal
+  businessPhone?: string; // Optional nếu user là personal
+  businessAddress?: string; // Optional nếu user là personal
+  businessRegistrationNumber?: string; // Optional nếu user là personal
+  representativeName?: string; // Optional nếu user là personal
 };
 
 export type HotelType = {
