@@ -30,7 +30,7 @@ const Home: React.FC = () => {
         imageUrl={bannerImage} // Ensure the image path is correct
         title="Special Offer!"
         description="Book now and get 20% off your first stay!"
-        link="/deals"
+        link="/search"
       />
       <h2 className="text-3xl font-bold">Latest Destinations</h2>
       <p className="text-gray-600">Most recent destinations added by our hosts</p>
@@ -54,7 +54,7 @@ const Home: React.FC = () => {
         imageUrl={bannerImage1} // Imported banner image
         title="Explore New Destinations!"
         description="Discover our latest additions with exclusive deals."
-        link="/new-destinations"
+        link="/detail/66fd09a8dd7ae648079b6fb1"
       />
     </div>
   );
