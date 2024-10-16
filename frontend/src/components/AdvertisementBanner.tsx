@@ -21,7 +21,7 @@ type AdvertisementBannerProps = {
           <h2 className="text-2xl font-bold">{title}</h2>
           <p className="mt-2">{description}</p>
           <a href={link} className="mt-4 bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded">
-            Learn More
+            Book Now
           </a>
         </div>
       </div>

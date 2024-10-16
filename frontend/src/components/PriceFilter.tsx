@@ -36,8 +36,8 @@ const PriceFilter = ({ selectedPrice = 100, onChange }: Props) => {
                    transition-all duration-300 ease-in-out hover:bg-gray-300 focus:outline-none"
       />
       <div className="flex justify-between text-sm mt-2 text-gray-500">
-        <span>£10</span>
-        <span>£500</span>
+        <span>$10</span>
+        <span>$500</span>
       </div>
     </div>
   );
